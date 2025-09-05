@@ -1,0 +1,15 @@
+clear all
+macro drop _all
+
+global dir_root "/Users/cocolouie/Documents/GitHub/ECON9540/03_Coding_Exercise"
+global dir_data "$dir_root/Data"
+global dir_temp "$dir_root/Temp"
+global dir_results "$dir_root/Results"
+
+global dir_process "$dir_root/Programs"
+global dir_analysis "$dir_root/Analysis"
+
+*Data Processing
+run "$dir_process/Processing1.do"
+
+*Data Analysis
