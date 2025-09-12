@@ -1,0 +1,57 @@
+clear
+
+*Random number generator seed
+set seed 9540
+
+*Generate observations
+set obs 1000
+
+*Assign baseline ability (generate data distribution)
+gen ability=rnormal(0,1)
+gen age=round(40+rnormal(0,5))
+gen experience=age-18
+
+gen yrs_schooling=round(runiform(8,16)+ability)
+	replace yrs_schooling=16 if yrs_schooling>16
+	replace yrs_schooling=8 if yrs_schooling<8
+
+*Generate earnings
+gen earnings=50+20*ability+3*yrs_schooling+experience+rnormal(0,1)
+
+*Generate initial distribution
+two scatter earnings yrs_schooling, ytitle("Earnings ($1000s)") xtitle("Years of Schooling") xlabel(8(2)16, grid notick) ylabel(0(50)200, grid notick angle(0)) name(g_0, replace)
+
+two (scatter earnings yrs_schooling) (lfit earnings yrs_schooling), ytitle("Earnings ($1000s)") xtitle("Years of Schooling") xlabel(8(2)16, grid notick) ylabel(0(50)200, grid notick angle(0)) name(g_1, replace)
+
+*We know earnings should add 3k per year, but we observe upwards bias due to ability
+reg earnings yrs_schooling, r
+
+reg earnings yrs_schooling ability, r
+
+*CONTROLS: remove variation not driven by primary regressor on indep AND dep variables
+*Accounting for ability by predicting earnings unexplained by ability
+reg earnings ability, r
+predict earnings_resid, resid
+
+two (scatter earnnings_resid yrs_schooling) (lfit earnings_resid yrs_schooling), ytitle("Earnings ($1000s)") xtitle("Years of Schooling") xlabel(8(2)16, grid notick) ylabel(-40(10)40, grid notick angle(0)) name(g_2, replace)
+
+*But ability also impacts years of schooling
+reg yrs_schooling ability, r
+predict yrs_resid, r
+
+two (scatter earnnings_resid yrs_resid) (lfit earnnings_resid yrs_resid), ytitle("Earnings ($1000s)") xtitle("Years of Schooling") xlabel(-4(2)4, grid notick) ylabel(-40(10)40, grid notick angle(0)) name(g_3, replace)
+
+***Now we have continuous variation in residualized years of schooling
+
+*Predict isolated variation
+reg earnings_resid yrs_resid, r
+reg earnings_resid yrs_resid experience, r
+***Does not change coefficients much, but substantially increases precision
+
+*TAKEAWAY: Recognize that ability (the control) impacts both dep and indep vars, so we need to residualize both yrs_schooling and earnings
+
+
+*ssc install binscatter
+
+binscatter earnings_resid yrs_resid
+****Collapses i
