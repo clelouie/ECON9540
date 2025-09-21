@@ -50,7 +50,6 @@ reg earnings_resid yrs_resid experience, r
 
 *TAKEAWAY: Recognize that ability (the control) impacts both dep and indep vars, so we need to residualize both yrs_schooling and earnings
 
-
 *ssc install binscatter
 
 binscatter earnings_resid yrs_resid, name(b_1, replace)
